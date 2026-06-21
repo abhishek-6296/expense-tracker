@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Add Transaction - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-primary mb-4">Add Transaction</h3>
+
+        <form method="POST" action="{{ url_for('add_transaction') }}">
+          <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select name="type" id="type" class="form-select" required>
+              <option value="Income">Income</option>
+              <option value="Expense" selected>Expense</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category" id="category" class="form-select" required></select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <input type="number" name="amount" class="form-control"
+                   step="0.01" min="0.01" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" name="description" class="form-control"
+                   placeholder="Optional">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Transaction Date</label>
+            <input type="date" name="transaction_date" class="form-control"
+                   value="{{ today }}" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Save Transaction</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  A tiny helper script: when the user changes the Type dropdown,
+  we show the matching list of categories. This keeps Income and
+  Expense categories from getting mixed up.
+-->
+<script>
+  const incomeCategories  = {{ income_categories | tojson }};
+  const expenseCategories = {{ expense_categories | tojson }};
+  const typeSelect = document.getElementById("type");
+  const categorySelect = document.getElementById("category");
+
+  function fillCategories() {
+    const list = typeSelect.value === "Income" ? incomeCategories : expenseCategories;
+    categorySelect.innerHTML = "";
+    list.forEach(function (name) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      categorySelect.appendChild(option);
+    });
+  }
+
+  typeSelect.addEventListener("change", fillCategories);
+  fillCategories();  // run once when the page loads
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Transactions - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">All Transactions</h2>
+  <a href="{{ url_for('add_transaction') }}" class="btn btn-primary">+ Add Transaction</a>
+</div>
+
+<!-- Filter and search form (uses GET so values appear in the URL) -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('transactions') }}" class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label">Type</label>
+        <select name="type" class="form-select">
+          <option value="">All</option>
+          <option value="Income" {% if filter_type == 'Income' %}selected{% endif %}>Income</option>
+          <option value="Expense" {% if filter_type == 'Expense' %}selected{% endif %}>Expense</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="">All</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if filter_category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ filter_date }}">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Search Description</label>
+        <input type="text" name="search" class="form-control"
+               placeholder="e.g. groceries" value="{{ search_text }}">
+      </div>
+
+      <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+        <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Transactions table -->
+<div class="card shadow-sm">
+  <div class="card-body">
+    {% if transactions %}
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="text-end">Amount</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr>
+              <td>{{ t.transaction_date }}</td>
+              <td>
+                {% if t.type == 'Income' %}
+                  <span class="badge bg-success">Income</span>
+                {% else %}
+                  <span class="badge bg-danger">Expense</span>
+                {% endif %}
+              </td>
+              <td>{{ t.category }}</td>
+              <td>{{ t.description }}</td>
+              <td class="text-end">₹ {{ "%.2f"|format(t.amount) }}</td>
+              <td class="text-center">
+                <a href="{{ url_for('edit_transaction', transaction_id=t.id) }}"
+                   class="btn btn-sm btn-outline-primary">Edit</a>
+
+                <!-- Delete uses POST inside a small form -->
+                <form method="POST"
+                      action="{{ url_for('delete_transaction', transaction_id=t.id) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('Delete this transaction?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No transactions found.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
